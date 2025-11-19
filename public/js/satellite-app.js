@@ -217,127 +217,24 @@ class SatelliteApp {
 
     async init() {
         console.log('🚀 应用初始化开始...');
+        console.log('⚡ 架构升级：前端不再依赖本地缓存，仅通过WebSocket查询统计结果');
 
         // 1. 立即显示骨架屏（已在HTML中渲染，无需额外操作）
         const skeleton = document.getElementById('skeleton-screen');
         const progressText = document.getElementById('skeleton-progress');
 
         try {
-            // 2. 快速显示缓存元数据（<10ms）
-            this.updateSkeletonProgress(10, '正在读取缓存...');
-            const cachedMeta = await cacheManager.getMetadataFast();
+            // 2. 初始化数据结构（空数组，不加载缓存）
+            this.updateSkeletonProgress(20, '正在初始化...');
+            this.data = []; // 前端不再使用本地数据
+            this.dataStoreReady = false;
+            this.dataLoadingStrategy = 'backend_stats'; // 后端统计模式
 
-            if (cachedMeta && cachedMeta.actualCount > 0) {
-                console.log('📊 缓存元数据:', cachedMeta);
-                this.displayMetadataStats(cachedMeta);
-                this.updateSkeletonProgress(20, '缓存元数据读取完成');
-            } else {
-                console.warn('⚠️ 本地缓存为空，显示无数据提示');
-                if (skeleton) skeleton.classList.add('hidden');
-                this.noDataAlert.classList.remove('hidden');
-                return;
-            }
-
-            // 3. ⚡⚡ 尝试加载缓存的DataStore桶结构（最快！）
-            this.updateSkeletonProgress(30, '正在加载DataStore...');
-            const groupType = this.groupBy ? this.groupBy.value : 'day';
-            // 🆕 传入lastUpdated用于校验缓存是否过期
-            const cachedBuckets = await cacheManager.loadDataStoreBuckets(groupType, cachedMeta.lastUpdated);
-
-            if (cachedBuckets && cachedBuckets.buckets) {
-                // ✅ 缓存命中！直接恢复DataStore
-                console.log('🚀 使用缓存的DataStore桶结构（极速加载）');
-                this.updateSkeletonProgress(50, '正在恢复DataStore...');
-
-                // 将数组转换回Map（JavaScript引擎已优化此操作）
-                const restoreStart = performance.now();
-                this.dataStore.buckets = new Map(cachedBuckets.buckets);
-                this.dataStoreReady = true;
-                const restoreTime = performance.now() - restoreStart;
-                console.log(`✅ DataStore恢复完成: ${this.dataStore.buckets.size} 个桶 (${restoreTime.toFixed(0)}ms, ${(this.dataStore.buckets.size / (restoreTime / 1000)).toFixed(0)} 桶/秒)`);
-                this.updateSkeletonProgress(90, 'DataStore恢复完成');
-
-                // 🚀 性能优化：延迟加载 this.data
-                // DataStore已包含所有统计信息，this.data仅用于实时更新和导出
-                // 初始化时不加载，完全跳过，极致提升启动速度
-                this.data = []; // 初始化为空
-                this.dataLoadingStrategy = 'lazy'; // 标记为延迟加载模式
-                console.log('⚡ 跳过 this.data 加载（DataStore缓存已包含所有统计数据）');
-                console.log('💡 仅在需要时（导出/实时更新）才按需加载原始数据');
-
-                // 🔥 记录已加载的数据范围（DataStore已有全部数据，但this.data为空）
-                this.loadedDataRange = null; // this.data为空，无范围
-
-                // 🔥 关键优化：DataStore缓存命中时，不需要后台加载！
-                this.needFullDataStoreConstruction = false;
-
-            } else {
-                // ❌ 缓存未命中，使用快速初始化 + 后台构建DataStore
-                console.log('⚠️ DataStore缓存未命中，使用快速初始化策略');
-                this.updateSkeletonProgress(40, '正在快速初始化...');
-
-                const quickStart = performance.now();
-
-                // 🚀 性能优化：只加载最近1周数据用于快速初始化
-                // 大幅减少冷启动时间（从10-20秒降至1-3秒）
-                this.data = [];
-                let loadedCount = 0;
-
-                // ⚠️ 清空DataStore，避免残留数据影响实时更新
-                this.dataStore.clear();
-
-                // ⚡ 使用分片查询只加载最近1周（极速冷启动）
-                const oneWeekAgo = new Date();
-                oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-
-                await cacheManager.queryDateRangeFromShards(
-                    oneWeekAgo,
-                    new Date(),
-                    (batch) => {
-                        loadedCount += batch.length;
-                        this.data.push(...batch);
-
-                        // 🆕 【极速】批量构建DataStore（10-50倍性能提升）
-                        this.dataStore.addRecordsToBucketBatch(batch, this.cycleEngine, groupType);
-
-                        // 🆕 动态更新进度（40% - 80%）
-                        const progress = 40 + Math.min(40, Math.floor(loadedCount / 50)); // 每50条增加1%
-                        this.updateSkeletonProgress(progress, `正在初始化... ${loadedCount} 条`);
-                    },
-                    5000
-                );
-
-                const quickTime = performance.now() - quickStart;
-                console.log(`✅ 快速初始化完成: ${loadedCount} 条（最近1周） (${quickTime.toFixed(0)}ms)`);
-                this.updateSkeletonProgress(85, '快速初始化完成');
-
-                // DataStore包含部分数据，标记为部分就绪
-                this.dataStoreReady = false; // 未完全就绪
-                this.dataLoadingStrategy = 'quick'; // 快速初始化模式
-
-                // 🔥 记录已加载的数据范围（用于判断是否需要按需加载）
-                this.loadedDataRange = {
-                    start: oneWeekAgo,
-                    end: new Date()
-                };
-                console.log(`📅 已加载数据范围: ${oneWeekAgo.toLocaleDateString()} - ${new Date().toLocaleDateString()}`);
-
-                // 🆕 标记需要加载全部数据来构建完整DataStore
-                this.needFullDataStoreConstruction = true;
-            }
-
-            // 🔥 修复：延迟加载模式下，this.data为空是正常的
-            if (this.data.length === 0 && this.dataLoadingStrategy !== 'lazy') {
-                console.warn('⚠️ 本地缓存为空');
-                if (skeleton) skeleton.classList.add('hidden');
-                this.noDataAlert.classList.remove('hidden');
-                return;
-            }
-
+            // 隐藏无数据提示（因为数据通过WebSocket查询）
             this.noDataAlert.classList.add('hidden');
 
-            // 4. 恢复页面状态（如果有保存的状态）
-            this.updateSkeletonProgress(92, '正在恢复页面状态...');
+            // 3. 恢复页面状态（如果有保存的状态）
+            this.updateSkeletonProgress(50, '正在恢复页面状态...');
             if (this.hasSavedState) {
                 const restored = this.restorePageState();
                 if (restored) {
@@ -347,8 +244,8 @@ class SatelliteApp {
                 this.setDefaultDates();
             }
 
-            // 5. 渲染图表（如果有保存的统计结果）
-            this.updateSkeletonProgress(96, '正在渲染图表...');
+            // 4. 渲染图表（如果有保存的统计结果）
+            this.updateSkeletonProgress(80, '正在渲染图表...');
 
             if (this.hasSavedStats) {
                 const statsRestored = this.restoreStatisticsResult();
@@ -357,7 +254,7 @@ class SatelliteApp {
                 }
             }
 
-            // 6. 移除骨架屏（数据已加载，页面可用）
+            // 5. 移除骨架屏（初始化完成，页面可用）
             this.updateSkeletonProgress(100, '初始化完成！');
             await new Promise(resolve => setTimeout(resolve, 300)); // 让用户看到100%
 
@@ -966,29 +863,25 @@ class SatelliteApp {
     async refreshCache() {
         try {
             this.refreshCacheBtn.disabled = true;
-            this.refreshCacheBtn.innerHTML = '<i class="fa fa-spinner fa-spin mr-1"></i>刷新中...';
+            this.refreshCacheBtn.innerHTML = '<i class="fa fa-spinner fa-spin mr-1"></i>重新查询中...';
 
-            console.log('🔄 用户手动刷新缓存...');
+            console.log('🔄 用户手动重新查询统计数据...');
 
-            // 🆕 清除DataStore桶缓存（因为数据将更新）
-            await cacheManager.clearDataStoreBucketsCache();
-
-            const result = await dataPreloader.autoPreloadAllData();
-
-            if (result.success) {
-                showSuccess(`缓存刷新成功！更新了 ${result.totalCount} 条数据`);
-                // 重新加载数据到应用
-                await this.init();
+            // ⚡ 架构升级：不再下载全量数据，而是重新执行当前的统计查询
+            if (this.chart) {
+                // 重新生成统计结果（通过WebSocket查询）
+                await this.generateStatistics();
+                showSuccess('统计数据已重新查询！');
+            } else {
+                showInfo('请先选择日期范围并生成统计结果');
             }
 
-            this.updateCacheStatus();
-            
         } catch (error) {
-            console.error('❌ 缓存刷新失败:', error);
-            showError('缓存刷新失败: ' + error.message);
+            console.error('❌ 重新查询失败:', error);
+            showError('重新查询失败: ' + error.message);
         } finally {
             this.refreshCacheBtn.disabled = false;
-            this.refreshCacheBtn.innerHTML = '<i class="fa fa-refresh mr-1"></i>刷新缓存';
+            this.refreshCacheBtn.innerHTML = '<i class="fa fa-refresh mr-1"></i>重新查询';
         }
     }
 

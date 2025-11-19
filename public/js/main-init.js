@@ -28,10 +28,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             await cacheManager.clearDataStoreBucketsCache();
         }
 
-        // ==================== 阶段2：加载数据和初始化应用 ====================
-        // 🚀 v21优化：首次必须等待全量数据下载，后续使用缓存+增量更新
-        // 开始加载数据（首次下载全量，后续只加载增量）
-        await dataPreloader.autoPreloadAllData();
+        // ==================== 阶段2：初始化应用（无需下载数据） ====================
+        // ⚡ 架构升级：前端不再下载全量数据，仅通过WebSocket查询统计结果
+        // 数据统计在ECS服务器端完成，前端只负责渲染
 
         // 初始化应用
         window.app = new SatelliteApp();
