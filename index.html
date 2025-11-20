@@ -42,19 +42,7 @@
 <body style="background-color: rgb(var(--bg-primary)); min-height: 100vh; color: rgb(var(--text-primary)); transition: all 0.3s;">
     <!-- SVG图标库 - 异步加载不阻塞渲染 -->
     <div style="display:none" id="svg-sprite-container"></div>
-    <script>
-        // 异步加载SVG sprite，不阻塞页面渲染
-        (function() {
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', './public/icons/sprite.svg', true);
-            xhr.onload = function() {
-                if (xhr.status === 200) {
-                    document.getElementById('svg-sprite-container').innerHTML = xhr.responseText;
-                }
-            };
-            xhr.send();
-        })();
-    </script>
+    <!-- SVG sprite已移除，改用内联SVG图标 -->
     <!-- 骨架屏 HTML -->
     <div id="skeleton-screen" style="position: fixed; inset: 0; background-color: rgb(var(--bg-primary)); z-index: 50;">
         <div class="container mx-auto px-4 py-6">
@@ -119,7 +107,10 @@
                  <a href="data-distribution.html" class="text-gray-600 hover:text-primary transition-colors px-1 py-5">数据分布</a>
                  <a href="circle-warning.html" class="text-gray-600 hover:text-primary transition-colors px-1 py-5">数据预警</a>
                  <a href="admin.html" class="text-gray-600 hover:text-primary transition-colors px-1 py-5">
-                    <svg class="icon mr-1"><use href="#icon-cog"/></svg>数据管理
+                    <svg class="icon mr-1 inline-block" width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                        <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z"/>
+                        <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319z"/>
+                    </svg>数据管理
                 </a>
             </nav>
 
@@ -180,7 +171,10 @@
                 <div class="flex items-center justify-between mb-1">
                     <label class="block text-sm font-medium text-gray-700">统计周期</label>
                     <button id="configGroupingBtn" class="text-gray-500 hover:text-primary transition-colors p-1" title="配置周期规则（基于文件时间）">
-                        <svg class="icon"><use href="#icon-cog"/></svg>
+                        <svg class="inline-block" width="20" height="20" viewBox="0 0 16 16" fill="currentColor">
+                            <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z"/>
+                            <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319z"/>
+                        </svg>
                     </button>
                 </div>
                 <select id="groupBy" class="w-full p-2 border border-gray-300 rounded-md">
