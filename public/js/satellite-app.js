@@ -203,7 +203,17 @@ class SatelliteApp {
                         pointHoverRadius: 6,
                         fill: true,
                         tension: 0.4,
-                        yAxisID: 'y'
+                        yAxisID: 'y',
+                        datalabels: {
+                            color: 'rgba(54, 162, 235, 1)',
+                            anchor: 'end',
+                            align: 'top',
+                            offset: 4,
+                            font: {
+                                weight: 'bold',
+                                size: 10
+                            }
+                        }
                     },
                     {
                         label: '失败圈次',
@@ -217,7 +227,17 @@ class SatelliteApp {
                         pointHoverRadius: 6,
                         fill: true,
                         tension: 0.4,
-                        yAxisID: 'y'
+                        yAxisID: 'y',
+                        datalabels: {
+                            color: 'rgba(255, 99, 132, 1)',
+                            anchor: 'end',
+                            align: 'bottom',
+                            offset: 4,
+                            font: {
+                                weight: 'bold',
+                                size: 10
+                            }
+                        }
                     },
                     {
                         label: '成功率(%)',
@@ -231,7 +251,18 @@ class SatelliteApp {
                         pointHoverRadius: 6,
                         fill: true,
                         tension: 0.4,
-                        yAxisID: 'y1'
+                        yAxisID: 'y1',
+                        datalabels: {
+                            color: 'rgba(75, 192, 192, 1)',
+                            anchor: 'start',
+                            align: 'top',
+                            offset: 4,
+                            font: {
+                                weight: 'bold',
+                                size: 10
+                            },
+                            formatter: (value) => value.toFixed(1) + '%'
+                        }
                     }
                 ]
             },
@@ -248,23 +279,29 @@ class SatelliteApp {
                         position: 'top'
                     },
                     datalabels: {
-                        display: false, // 默认不显示，由checkbox控制
-                        align: 'top',
-                        anchor: 'end',
-                        font: {
-                            weight: 'bold',
-                            size: 11
-                        },
-                        formatter: (value, context) => {
-                            // 为成功率数据集添加百分号
-                            if (context.dataset.label === '成功率(%)') {
-                                return value.toFixed(1) + '%';
+                        display: false // 默认不显示，由checkbox控制，每个dataset有自己的配置
+                    },
+                    tooltip: {
+                        mode: 'index', // 显示所有数据集在同一个X轴位置的值
+                        intersect: false, // 不需要精确悬停在点上
+                        callbacks: {
+                            title: (context) => {
+                                // 显示时间点
+                                return context[0].label;
+                            },
+                            label: (context) => {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                // 为成功率添加百分号
+                                if (context.dataset.label === '成功率(%)') {
+                                    label += context.parsed.y.toFixed(1) + '%';
+                                } else {
+                                    label += context.parsed.y;
+                                }
+                                return label;
                             }
-                            return value;
-                        },
-                        color: (context) => {
-                            // 使用与线条相同的颜色
-                            return context.dataset.borderColor;
                         }
                     }
                 },
@@ -514,8 +551,13 @@ class SatelliteApp {
             return;
         }
 
-        // 更新图表配置
-        this.charts.main.options.plugins.datalabels.display = show;
+        // 更新每个数据集的datalabels配置
+        this.charts.main.data.datasets.forEach(dataset => {
+            if (dataset.datalabels) {
+                dataset.datalabels.display = show;
+            }
+        });
+
         this.charts.main.update();
 
         console.log(`📊 数据标签${show ? '已显示' : '已隐藏'}`);
