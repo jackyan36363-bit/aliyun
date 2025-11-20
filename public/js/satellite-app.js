@@ -246,6 +246,23 @@ class SatelliteApp {
     }
 
     /**
+     * 计算日期是一年中的第几周（ISO 8601标准）
+     */
+    getWeekNumber(date) {
+        // 复制日期对象，避免修改原始对象
+        const target = new Date(date.valueOf());
+        const dayNum = (date.getDay() + 6) % 7; // 转换为周一=0
+        target.setDate(target.getDate() - dayNum + 3); // 调整到周四
+        const firstThursday = target.valueOf();
+        target.setMonth(0, 1); // 设置为1月1日
+        if (target.getDay() !== 4) {
+            target.setMonth(0, 1 + ((4 - target.getDay()) + 7) % 7);
+        }
+        // 计算周数
+        return 1 + Math.ceil((firstThursday - target) / 604800000);
+    }
+
+    /**
      * 获取筛选条件
      */
     getFilters() {
@@ -293,7 +310,12 @@ class SatelliteApp {
                     return cleanPeriod;
 
                 case 'week':
-                    // 按周：显示"W1"、"W2"等
+                    // 按周：计算是一年中的第几周
+                    if (cleanPeriod.includes('-')) {
+                        const date = new Date(cleanPeriod + 'T00:00:00');
+                        const weekNum = this.getWeekNumber(date);
+                        return `W${weekNum}`;
+                    }
                     return `W${index + 1}`;
 
                 case 'month':
