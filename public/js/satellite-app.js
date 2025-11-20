@@ -48,6 +48,14 @@ class SatelliteApp {
             this.generateChart();
         });
 
+        // 显示数据标签checkbox
+        const showDataLabels = document.getElementById('showDataLabels');
+        if (showDataLabels) {
+            showDataLabels.addEventListener('change', (e) => {
+                this.toggleDataLabels(e.target.checked);
+            });
+        }
+
         // 卫星数量卡片点击
         const satelliteCard = document.getElementById('satelliteCountCard');
         if (satelliteCard) {
@@ -176,38 +184,54 @@ class SatelliteApp {
         const failureCounts = records.map(r => r.failure_count);
         const successRates = records.map(r => r.success_rate);
 
-        // 创建图表
+        // 创建图表 - 全部使用折线图
         const ctx = canvas.getContext('2d');
         this.charts.main = new Chart(ctx, {
-            type: 'bar',
+            type: 'line',
             data: {
                 labels: labels,
                 datasets: [
                     {
                         label: '计划ID数量',
                         data: planCounts,
-                        backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                        backgroundColor: 'rgba(54, 162, 235, 0.1)',
                         borderColor: 'rgba(54, 162, 235, 1)',
-                        borderWidth: 1,
+                        borderWidth: 2,
+                        pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+                        pointBorderColor: '#fff',
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        fill: true,
+                        tension: 0.4,
                         yAxisID: 'y'
                     },
                     {
                         label: '失败圈次',
                         data: failureCounts,
-                        backgroundColor: 'rgba(255, 99, 132, 0.7)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.1)',
                         borderColor: 'rgba(255, 99, 132, 1)',
-                        borderWidth: 1,
+                        borderWidth: 2,
+                        pointBackgroundColor: 'rgba(255, 99, 132, 1)',
+                        pointBorderColor: '#fff',
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        fill: true,
+                        tension: 0.4,
                         yAxisID: 'y'
                     },
                     {
                         label: '成功率(%)',
                         data: successRates,
-                        type: 'line',
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.1)',
                         borderColor: 'rgba(75, 192, 192, 1)',
                         borderWidth: 2,
-                        yAxisID: 'y1',
-                        fill: false
+                        pointBackgroundColor: 'rgba(75, 192, 192, 1)',
+                        pointBorderColor: '#fff',
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        fill: true,
+                        tension: 0.4,
+                        yAxisID: 'y1'
                     }
                 ]
             },
@@ -222,6 +246,26 @@ class SatelliteApp {
                     legend: {
                         display: true,
                         position: 'top'
+                    },
+                    datalabels: {
+                        display: false, // 默认不显示，由checkbox控制
+                        align: 'top',
+                        anchor: 'end',
+                        font: {
+                            weight: 'bold',
+                            size: 11
+                        },
+                        formatter: (value, context) => {
+                            // 为成功率数据集添加百分号
+                            if (context.dataset.label === '成功率(%)') {
+                                return value.toFixed(1) + '%';
+                            }
+                            return value;
+                        },
+                        color: (context) => {
+                            // 使用与线条相同的颜色
+                            return context.dataset.borderColor;
+                        }
                     }
                 },
                 scales: {
@@ -459,6 +503,22 @@ class SatelliteApp {
                 errorState.classList.add('hidden');
             }, 5000);
         }
+    }
+
+    /**
+     * 切换数据标签显示
+     */
+    toggleDataLabels(show) {
+        if (!this.charts.main) {
+            console.warn('⚠️ 图表未创建，无法切换数据标签');
+            return;
+        }
+
+        // 更新图表配置
+        this.charts.main.options.plugins.datalabels.display = show;
+        this.charts.main.update();
+
+        console.log(`📊 数据标签${show ? '已显示' : '已隐藏'}`);
     }
 
     /**
