@@ -25,9 +25,19 @@
     <!-- 配置文件 - 必须最先加载 -->
     <script src="./public/js/config.js"></script>
 
-    <!-- 图表库 -->
-    <script src="./public/lib/chart.min.js" defer></script>
-    <script src="./public/lib/chartjs-plugin-datalabels.min.js" defer></script>
+    <!-- 图表库 - 移除defer确保顺序加载 -->
+    <script src="./public/lib/chart.min.js"></script>
+    <script src="./public/lib/chartjs-plugin-datalabels.min.js"></script>
+    <!-- 注册datalabels插件 -->
+    <script>
+        // 确保datalabels插件正确注册
+        if (typeof Chart !== 'undefined' && typeof ChartDataLabels !== 'undefined') {
+            Chart.register(ChartDataLabels);
+            console.log('✅ Chart.js datalabels插件已注册');
+        } else {
+            console.error('❌ Chart.js或datalabels插件未正确加载');
+        }
+    </script>
 </head>
 <body style="background-color: rgb(var(--bg-primary)); min-height: 100vh; color: rgb(var(--text-primary)); transition: all 0.3s;">
     <!-- SVG图标库 - 异步加载不阻塞渲染 -->
@@ -346,11 +356,11 @@
                 <div class="flex items-start justify-between">
                     <div>
                         <p class="text-sm text-gray-500 font-medium">客户数量</p>
-                        <h3 class="text-3xl font-bold text-purple-600 mt-2" id="customerCount">0</h3>
+                        <h3 class="text-3xl font-bold text-accent mt-2" id="customerCount">0</h3>
                         <p class="text-xs text-gray-400 mt-1">点击查看趋势图</p>
                     </div>
-                    <div class="p-3 bg-purple-600/10 rounded-lg">
-                        <svg class="icon icon-xl text-purple-600"><use href="#icon-users"/></svg>
+                    <div class="p-3 bg-accent/10 rounded-lg">
+                        <svg class="icon icon-xl text-accent"><use href="#icon-users"/></svg>
                     </div>
                 </div>
             </div>
@@ -552,7 +562,7 @@
                 <!-- 加载状态 -->
                 <div id="customerChartLoading" class="absolute inset-0 flex items-center justify-center bg-card/80 hidden">
                     <div class="text-center">
-                        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mb-2"></div>
+                        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-accent mb-2"></div>
                         <p>正在统计客户数量趋势...</p>
                     </div>
                 </div>
