@@ -228,39 +228,45 @@ body {
    🎭 工具类（使用CSS变量）
    ============================================ */
 
-/* 主题色应用 */
-.bg-primary { background-color: rgb(var(--color-primary)); }
-.text-primary-color { color: rgb(var(--color-primary)); }
-.border-primary { border-color: rgb(var(--color-primary)); }
+/* 主题色应用 - 使用!important确保覆盖Tailwind */
+.bg-primary { background-color: rgb(var(--color-primary)) !important; }
+.text-primary { color: rgb(var(--color-primary)) !important; }
+.text-primary-color { color: rgb(var(--color-primary)) !important; }
+.border-primary { border-color: rgb(var(--color-primary)) !important; }
 
 /* 次要色 */
-.text-secondary-color { color: rgb(var(--color-secondary)); }
-.bg-secondary-color { background-color: rgb(var(--color-secondary)); }
-.border-secondary-color { border-color: rgb(var(--color-secondary)); }
+.text-secondary { color: rgb(var(--color-secondary)) !important; }
+.text-secondary-color { color: rgb(var(--color-secondary)) !important; }
+.bg-secondary { background-color: rgb(var(--color-secondary)) !important; }
+.bg-secondary-color { background-color: rgb(var(--color-secondary)) !important; }
+.border-secondary-color { border-color: rgb(var(--color-secondary)) !important; }
 
 /* 强调色 */
-.text-accent { color: rgb(var(--color-accent)); }
-.bg-accent { background-color: rgb(var(--color-accent)); }
-.border-accent { border-color: rgb(var(--color-accent)); }
+.text-accent { color: rgb(var(--color-accent)) !important; }
+.bg-accent { background-color: rgb(var(--color-accent)) !important; }
+.border-accent { border-color: rgb(var(--color-accent)) !important; }
 
 /* 功能色 */
-.text-success { color: rgb(var(--color-success)); }
-.bg-success { background-color: rgb(var(--color-success)); }
-.text-warning { color: rgb(var(--color-warning)); }
-.bg-warning { background-color: rgb(var(--color-warning)); }
-.text-danger { color: rgb(var(--color-danger)); }
-.bg-danger { background-color: rgb(var(--color-danger)); }
+.text-success { color: rgb(var(--color-success)) !important; }
+.bg-success { background-color: rgb(var(--color-success)) !important; }
+.text-warning { color: rgb(var(--color-warning)) !important; }
+.bg-warning { background-color: rgb(var(--color-warning)) !important; }
+.text-danger { color: rgb(var(--color-danger)) !important; }
+.bg-danger { background-color: rgb(var(--color-danger)) !important; }
 
 /* 透明度版本 */
-.bg-primary\/10 { background-color: rgba(var(--color-primary), 0.1); }
-.bg-secondary-color\/10 { background-color: rgba(var(--color-secondary), 0.1); }
-.bg-accent\/10 { background-color: rgba(var(--color-accent), 0.1); }
-.bg-success\/10 { background-color: rgba(var(--color-success), 0.1); }
-.bg-warning\/10 { background-color: rgba(var(--color-warning), 0.1); }
-.bg-danger\/10 { background-color: rgba(var(--color-danger), 0.1); }
+.bg-primary\/10 { background-color: rgba(var(--color-primary), 0.1) !important; }
+.bg-secondary-color\/10 { background-color: rgba(var(--color-secondary), 0.1) !important; }
+.bg-accent\/10 { background-color: rgba(var(--color-accent), 0.1) !important; }
+.bg-success\/10 { background-color: rgba(var(--color-success), 0.1) !important; }
+.bg-warning\/10 { background-color: rgba(var(--color-warning), 0.1) !important; }
+.bg-danger\/10 { background-color: rgba(var(--color-danger), 0.1) !important; }
 
-.bg-primary\/20 { background-color: rgba(var(--color-primary), 0.2); }
-.bg-primary\/90 { background-color: rgba(var(--color-primary), 0.9); }
+.bg-primary\/20 { background-color: rgba(var(--color-primary), 0.2) !important; }
+.bg-primary\/90 { background-color: rgba(var(--color-primary), 0.9) !important; }
+
+.hover\:bg-primary\/90:hover { background-color: rgba(var(--color-primary), 0.9) !important; }
+.hover\:bg-primary\/20:hover { background-color: rgba(var(--color-primary), 0.2) !important; }
 
 /* 适配深色模式的背景色 */
 .bg-card { background-color: rgb(var(--bg-base)); }

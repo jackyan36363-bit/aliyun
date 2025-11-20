@@ -261,7 +261,11 @@ class SatelliteApp {
                                 weight: 'bold',
                                 size: 10
                             },
-                            formatter: (value) => value.toFixed(1) + '%'
+                            formatter: (value) => {
+                                if (value == null) return '';
+                                const num = typeof value === 'string' ? parseFloat(value) : value;
+                                return num.toFixed(1) + '%';
+                            }
                         }
                     }
                 ]
@@ -334,6 +338,12 @@ class SatelliteApp {
         });
 
         console.log('✅ 主图表渲染完成');
+
+        // 同步checkbox状态到数据标签显示
+        const showDataLabelsCheckbox = document.getElementById('showDataLabels');
+        if (showDataLabelsCheckbox) {
+            this.toggleDataLabels(showDataLabelsCheckbox.checked);
+        }
     }
 
     /**
@@ -354,8 +364,10 @@ class SatelliteApp {
         // 总失败圈次
         document.getElementById('totalFailures').textContent = overview.total_failures || 0;
 
-        // 平均成功率
-        document.getElementById('avgSuccessRate').textContent = (overview.avg_success_rate || 0).toFixed(2) + '%';
+        // 平均成功率（后端可能返回字符串或数字）
+        const avgRate = overview.avg_success_rate || 0;
+        const rateValue = typeof avgRate === 'string' ? parseFloat(avgRate) : avgRate;
+        document.getElementById('avgSuccessRate').textContent = rateValue.toFixed(2) + '%';
 
         // 最大/最小周期计划数
         if (planStats.length > 0) {
