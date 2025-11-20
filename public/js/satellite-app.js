@@ -151,6 +151,36 @@ class SatelliteApp {
                 this.downloadChart(chartId, downloadType);
             });
         });
+
+        // 日期选择器自动渲染
+        const startDateInput = document.getElementById('startDate');
+        const endDateInput = document.getElementById('endDate');
+        if (startDateInput && endDateInput) {
+            const autoRender = () => {
+                const startDate = startDateInput.value;
+                const endDate = endDateInput.value;
+                // 只有当开始和结束日期都选择后才自动渲染
+                if (startDate && endDate) {
+                    this.showInfoToast('正在重新渲染图表...');
+                    setTimeout(() => this.generateChart(), 100);
+                }
+            };
+            startDateInput.addEventListener('change', autoRender);
+            endDateInput.addEventListener('change', autoRender);
+        }
+
+        // 统计周期选择器自动渲染
+        const groupBySelect = document.getElementById('groupBy');
+        if (groupBySelect) {
+            groupBySelect.addEventListener('change', () => {
+                const startDate = document.getElementById('startDate').value;
+                const endDate = document.getElementById('endDate').value;
+                if (startDate && endDate) {
+                    this.showInfoToast('统计周期已更改，正在重新渲染图表...');
+                    setTimeout(() => this.generateChart(), 100);
+                }
+            });
+        }
     }
 
     /**
@@ -246,8 +276,15 @@ class SatelliteApp {
             this.charts.main.destroy();
         }
 
-        // 准备数据
-        const labels = records.map(r => r.period);
+        // 准备数据 - 确保时间轴只显示日期
+        const labels = records.map(r => {
+            const period = r.period;
+            // 如果包含时间部分（空格或T），只保留日期部分
+            if (typeof period === 'string' && (period.includes(' ') || period.includes('T'))) {
+                return period.split(/[T ]/)[0];
+            }
+            return period;
+        });
         const planCounts = records.map(r => r.plan_count);
         const failureCounts = records.map(r => r.failure_count);
         const successRates = records.map(r => r.success_rate);
@@ -609,6 +646,14 @@ class SatelliteApp {
 
         // 关闭模态框
         this.hideGroupingConfig();
+
+        // 自动重新渲染图表
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+        if (startDate && endDate) {
+            this.showInfoToast('周期规则已更新，正在重新渲染图表...');
+            setTimeout(() => this.generateChart(), 300);
+        }
     }
 
     /**
@@ -660,6 +705,31 @@ class SatelliteApp {
                 notification.parentNode.removeChild(notification);
             }
         }, 3000);
+    }
+
+    /**
+     * 显示信息提示（蓝色）
+     */
+    showInfoToast(message) {
+        const notification = document.createElement('div');
+        notification.className = 'fixed top-20 right-4 bg-blue-500 text-white px-4 py-2 rounded shadow-lg z-50 animate-fade-in';
+        notification.innerHTML = `
+            <div class="flex items-center">
+                <span class="mr-2">ℹ️</span>
+                <span>${message}</span>
+                <button class="ml-4 text-white hover:text-gray-200" onclick="this.parentElement.parentElement.remove()">
+                    ✕
+                </button>
+            </div>
+        `;
+        document.body.appendChild(notification);
+
+        // 2秒后自动移除（信息提示显示时间稍短）
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 2000);
     }
 
     /**
