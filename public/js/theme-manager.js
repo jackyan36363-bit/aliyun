@@ -334,15 +334,19 @@ class ThemeManager {
   }
 }
 
-// 页面加载完成后自动初始化（延迟确保Tailwind已加载）
+// 页面加载完成后自动初始化
 if (typeof window !== 'undefined') {
-  // 使用load事件而不是DOMContentLoaded，确保所有资源（包括Tailwind CDN）都已加载
-  window.addEventListener('load', () => {
-    setTimeout(() => {
+  // 立即初始化或等待DOMContentLoaded
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
       window.themeManager = new ThemeManager();
-      console.log('✅ 主题管理器已加载');
-    }, 100);
-  });
+      console.log('✅ 主题管理器已加载 (DOMContentLoaded)');
+    });
+  } else {
+    // DOM已经加载完成，立即初始化
+    window.themeManager = new ThemeManager();
+    console.log('✅ 主题管理器已加载 (立即)');
+  }
 
   // 提供手动初始化方法
   window.initThemeManager = function() {
