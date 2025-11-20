@@ -341,6 +341,14 @@ class SatelliteApp {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                layout: {
+                    padding: {
+                        top: 30,
+                        right: 20,
+                        bottom: 10,
+                        left: 20
+                    }
+                },
                 plugins: {
                     title: {
                         display: true,
@@ -348,7 +356,7 @@ class SatelliteApp {
                     },
                     legend: {
                         display: true,
-                        position: 'top'
+                        position: 'bottom'
                     },
                     datalabels: {
                         display: false // 默认不显示，由checkbox控制，每个dataset有自己的配置
@@ -825,7 +833,12 @@ class SatelliteApp {
                     const value = dataset.data[index];
                     // 如果是成功率，保留小数
                     if (dataset.label.includes('成功率')) {
-                        row.push(value != null ? value.toFixed(2) : '');
+                        if (value != null) {
+                            const num = typeof value === 'string' ? parseFloat(value) : value;
+                            row.push(num.toFixed(2));
+                        } else {
+                            row.push('');
+                        }
                     } else {
                         row.push(value != null ? value : '');
                     }
