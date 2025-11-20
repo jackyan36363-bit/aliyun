@@ -276,14 +276,44 @@ class SatelliteApp {
             this.charts.main.destroy();
         }
 
-        // 准备数据 - 确保时间轴只显示日期
-        const labels = records.map(r => {
+        // 准备数据 - 根据统计周期格式化显示
+        const labels = records.map((r, index) => {
             const period = r.period;
+            let cleanPeriod = period;
+
             // 如果包含时间部分（空格或T），只保留日期部分
             if (typeof period === 'string' && (period.includes(' ') || period.includes('T'))) {
-                return period.split(/[T ]/)[0];
+                cleanPeriod = period.split(/[T ]/)[0];
             }
-            return period;
+
+            // 根据统计周期格式化标签
+            switch(groupBy) {
+                case 'day':
+                    // 按日：显示完整日期
+                    return cleanPeriod;
+
+                case 'week':
+                    // 按周：显示"W1"、"W2"等
+                    return `W${index + 1}`;
+
+                case 'month':
+                    // 按月：提取月份显示如"10月"
+                    if (cleanPeriod.includes('-')) {
+                        const month = cleanPeriod.split('-')[1];
+                        return `${parseInt(month)}月`;
+                    }
+                    return cleanPeriod;
+
+                case 'quarter':
+                    // 按季度：显示如"Q1"
+                    if (typeof cleanPeriod === 'string' && cleanPeriod.includes('-Q')) {
+                        return cleanPeriod.split('-')[1]; // 提取"Q1"部分
+                    }
+                    return cleanPeriod;
+
+                default:
+                    return cleanPeriod;
+            }
         });
         const planCounts = records.map(r => r.plan_count);
         const failureCounts = records.map(r => r.failure_count);
