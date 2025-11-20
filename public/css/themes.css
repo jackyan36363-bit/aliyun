@@ -233,6 +233,35 @@ body {
 .text-primary-color { color: rgb(var(--color-primary)); }
 .border-primary { border-color: rgb(var(--color-primary)); }
 
+/* 次要色 */
+.text-secondary-color { color: rgb(var(--color-secondary)); }
+.bg-secondary-color { background-color: rgb(var(--color-secondary)); }
+.border-secondary-color { border-color: rgb(var(--color-secondary)); }
+
+/* 强调色 */
+.text-accent { color: rgb(var(--color-accent)); }
+.bg-accent { background-color: rgb(var(--color-accent)); }
+.border-accent { border-color: rgb(var(--color-accent)); }
+
+/* 功能色 */
+.text-success { color: rgb(var(--color-success)); }
+.bg-success { background-color: rgb(var(--color-success)); }
+.text-warning { color: rgb(var(--color-warning)); }
+.bg-warning { background-color: rgb(var(--color-warning)); }
+.text-danger { color: rgb(var(--color-danger)); }
+.bg-danger { background-color: rgb(var(--color-danger)); }
+
+/* 透明度版本 */
+.bg-primary\/10 { background-color: rgba(var(--color-primary), 0.1); }
+.bg-secondary-color\/10 { background-color: rgba(var(--color-secondary), 0.1); }
+.bg-accent\/10 { background-color: rgba(var(--color-accent), 0.1); }
+.bg-success\/10 { background-color: rgba(var(--color-success), 0.1); }
+.bg-warning\/10 { background-color: rgba(var(--color-warning), 0.1); }
+.bg-danger\/10 { background-color: rgba(var(--color-danger), 0.1); }
+
+.bg-primary\/20 { background-color: rgba(var(--color-primary), 0.2); }
+.bg-primary\/90 { background-color: rgba(var(--color-primary), 0.9); }
+
 /* 适配深色模式的背景色 */
 .bg-card { background-color: rgb(var(--bg-base)); }
 .bg-surface { background-color: rgb(var(--bg-primary)); }
