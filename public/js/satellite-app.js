@@ -7,6 +7,25 @@ class SatelliteApp {
         this.charts = {}; // 图表实例
         this.currentFilters = null; // 当前筛选条件
         this.isLoading = false;
+
+        // 默认周期规则配置
+        this.groupingConfig = {
+            day: {
+                startTime: '00:00'
+            },
+            week: {
+                startDay: 1, // 周一
+                startTime: '00:00'
+            },
+            month: {
+                startDate: 1, // 1号
+                startTime: '00:00'
+            },
+            quarter: {
+                startMonth: 1, // 1月（Q1）
+                startTime: '00:00'
+            }
+        };
     }
 
     /**
@@ -17,6 +36,9 @@ class SatelliteApp {
 
         // 初始化日期选择器
         this.initDatePickers();
+
+        // 初始化周期配置
+        this.initGroupingConfig();
 
         // 初始化事件监听
         this.initEventListeners();
@@ -37,6 +59,21 @@ class SatelliteApp {
 
         document.getElementById('startDate').valueAsDate = startDate;
         document.getElementById('endDate').valueAsDate = endDate;
+    }
+
+    /**
+     * 初始化周期配置（从localStorage加载）
+     */
+    initGroupingConfig() {
+        const savedConfig = localStorage.getItem('groupingConfig');
+        if (savedConfig) {
+            try {
+                this.groupingConfig = JSON.parse(savedConfig);
+                console.log('✅ 加载周期配置:', this.groupingConfig);
+            } catch (e) {
+                console.warn('⚠️ 周期配置解析失败，使用默认配置');
+            }
+        }
     }
 
     /**
@@ -87,6 +124,33 @@ class SatelliteApp {
                 this.hideGroupingConfig();
             });
         }
+
+        // 保存周期配置
+        const saveConfigBtn = document.getElementById('saveGroupingConfig');
+        if (saveConfigBtn) {
+            saveConfigBtn.addEventListener('click', () => {
+                this.saveGroupingConfig();
+            });
+        }
+
+        // 日周期时间输入实时更新显示
+        const dayStartInput = document.getElementById('dayStart');
+        if (dayStartInput) {
+            dayStartInput.addEventListener('input', (e) => {
+                const startTime = e.target.value;
+                document.getElementById('dayStartDisplay').textContent = startTime;
+                document.getElementById('dayEndDisplay').textContent = startTime;
+            });
+        }
+
+        // 下载按钮
+        document.querySelectorAll('.chart-download-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const chartId = e.currentTarget.dataset.chart;
+                const downloadType = e.currentTarget.dataset.type;
+                this.downloadChart(chartId, downloadType);
+            });
+        });
     }
 
     /**
@@ -159,10 +223,14 @@ class SatelliteApp {
         const endDate = document.getElementById('endDate').value;
         const groupBy = document.getElementById('groupBy').value;
 
+        // 获取当前选择的周期规则
+        const groupingRule = this.groupingConfig[groupBy];
+
         return {
             startDate,
             endDate,
-            groupBy
+            groupBy,
+            groupingRule // 添加周期规则参数
         };
     }
 
@@ -455,6 +523,9 @@ class SatelliteApp {
     showGroupingConfig() {
         const modal = document.getElementById('groupingConfigModal');
         if (modal) {
+            // 加载当前配置到表单
+            this.loadConfigToForm();
+
             modal.classList.remove('hidden');
             setTimeout(() => {
                 document.getElementById('modalContent').classList.remove('scale-95', 'opacity-0');
@@ -470,6 +541,66 @@ class SatelliteApp {
                 modal.classList.add('hidden');
             }, 300);
         }
+    }
+
+    /**
+     * 加载配置到表单
+     */
+    loadConfigToForm() {
+        // 日周期
+        const dayStartTime = this.groupingConfig.day.startTime;
+        document.getElementById('dayStart').value = dayStartTime;
+        document.getElementById('dayStartDisplay').textContent = dayStartTime;
+        document.getElementById('dayEndDisplay').textContent = dayStartTime;
+
+        // 周周期
+        document.getElementById('weekStartDay').value = this.groupingConfig.week.startDay;
+        document.getElementById('weekStartTime').value = this.groupingConfig.week.startTime;
+
+        // 月周期
+        document.getElementById('monthStartDate').value = this.groupingConfig.month.startDate;
+        document.getElementById('monthStartTime').value = this.groupingConfig.month.startTime;
+
+        // 季度周期
+        document.getElementById('quarterStartMonth').value = this.groupingConfig.quarter.startMonth;
+        document.getElementById('quarterStartTime').value = this.groupingConfig.quarter.startTime;
+
+        console.log('✅ 配置已加载到表单');
+    }
+
+    /**
+     * 保存周期配置
+     */
+    saveGroupingConfig() {
+        // 从表单读取配置
+        this.groupingConfig = {
+            day: {
+                startTime: document.getElementById('dayStart').value
+            },
+            week: {
+                startDay: parseInt(document.getElementById('weekStartDay').value),
+                startTime: document.getElementById('weekStartTime').value
+            },
+            month: {
+                startDate: parseInt(document.getElementById('monthStartDate').value),
+                startTime: document.getElementById('monthStartTime').value
+            },
+            quarter: {
+                startMonth: parseInt(document.getElementById('quarterStartMonth').value),
+                startTime: document.getElementById('quarterStartTime').value
+            }
+        };
+
+        // 保存到localStorage
+        localStorage.setItem('groupingConfig', JSON.stringify(this.groupingConfig));
+
+        console.log('✅ 周期配置已保存:', this.groupingConfig);
+
+        // 显示成功提示
+        this.showSuccessNotification('周期配置已保存');
+
+        // 关闭模态框
+        this.hideGroupingConfig();
     }
 
     /**
@@ -496,6 +627,31 @@ class SatelliteApp {
                 notification.parentNode.removeChild(notification);
             }
         }, 5000);
+    }
+
+    /**
+     * 显示成功通知
+     */
+    showSuccessNotification(message) {
+        const notification = document.createElement('div');
+        notification.className = 'fixed top-20 right-4 bg-success text-white px-4 py-2 rounded shadow-lg z-50 animate-fade-in';
+        notification.innerHTML = `
+            <div class="flex items-center">
+                <span class="mr-2">✅</span>
+                <span>${message}</span>
+                <button class="ml-4 text-white hover:text-gray-200" onclick="this.parentElement.parentElement.remove()">
+                    ✕
+                </button>
+            </div>
+        `;
+        document.body.appendChild(notification);
+
+        // 3秒后自动移除
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 3000);
     }
 
     /**
@@ -586,6 +742,116 @@ class SatelliteApp {
             'quarter': '季度'
         };
         return labels[groupBy] || groupBy;
+    }
+
+    /**
+     * 下载图表（图片或数据）
+     */
+    downloadChart(chartId, downloadType) {
+        // 根据chartId获取图表实例和数据
+        let chart, chartData, fileName;
+
+        if (chartId === 'mainChart') {
+            chart = this.charts.main;
+            chartData = chart?.data;
+            fileName = '计划ID统计图表';
+        } else if (chartId === 'satelliteChart') {
+            chart = this.charts.satellite;
+            chartData = chart?.data;
+            fileName = '卫星数量趋势图';
+        } else if (chartId === 'customerChart') {
+            chart = this.charts.customer;
+            chartData = chart?.data;
+            fileName = '客户数量趋势图';
+        }
+
+        if (!chart) {
+            alert('图表未生成，请先生成统计结果');
+            return;
+        }
+
+        if (downloadType === 'image') {
+            this.downloadChartImage(chart, fileName);
+        } else if (downloadType === 'csv') {
+            this.downloadChartData(chartData, fileName);
+        }
+    }
+
+    /**
+     * 下载图表为图片
+     */
+    downloadChartImage(chart, fileName) {
+        try {
+            // 使用Chart.js的toBase64Image方法获取图片
+            const imageUrl = chart.toBase64Image('image/png', 1);
+
+            // 创建下载链接
+            const link = document.createElement('a');
+            link.download = `${fileName}_${new Date().toISOString().slice(0, 10)}.png`;
+            link.href = imageUrl;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            console.log('✅ 图表图片下载完成');
+            this.showSuccessNotification('图表已下载');
+        } catch (error) {
+            console.error('❌ 下载图表失败:', error);
+            alert('下载图表失败: ' + error.message);
+        }
+    }
+
+    /**
+     * 下载图表数据为CSV
+     */
+    downloadChartData(chartData, fileName) {
+        if (!chartData) {
+            alert('没有可下载的数据');
+            return;
+        }
+
+        try {
+            // 构建CSV内容
+            const labels = chartData.labels || [];
+            const datasets = chartData.datasets || [];
+
+            // CSV头部：周期 + 各个数据集名称
+            let csvContent = '周期,' + datasets.map(ds => ds.label).join(',') + '\n';
+
+            // CSV数据行
+            labels.forEach((label, index) => {
+                const row = [label];
+                datasets.forEach(dataset => {
+                    const value = dataset.data[index];
+                    // 如果是成功率，保留小数
+                    if (dataset.label.includes('成功率')) {
+                        row.push(value != null ? value.toFixed(2) : '');
+                    } else {
+                        row.push(value != null ? value : '');
+                    }
+                });
+                csvContent += row.join(',') + '\n';
+            });
+
+            // 创建Blob
+            const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+
+            // 创建下载链接
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `${fileName}_数据_${new Date().toISOString().slice(0, 10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+
+            console.log('✅ 图表数据下载完成');
+            this.showSuccessNotification('数据已下载为CSV');
+        } catch (error) {
+            console.error('❌ 下载数据失败:', error);
+            alert('下载数据失败: ' + error.message);
+        }
     }
 }
 
