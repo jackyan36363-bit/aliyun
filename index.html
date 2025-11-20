@@ -29,7 +29,7 @@
     <script src="./public/lib/chart.min.js" defer></script>
     <script src="./public/lib/chartjs-plugin-datalabels.min.js" defer></script>
 </head>
-<body class="bg-gray-50 min-h-screen">
+<body style="background-color: rgb(var(--bg-primary)); min-height: 100vh; color: rgb(var(--text-primary)); transition: all 0.3s;">
     <!-- SVG图标库 - 异步加载不阻塞渲染 -->
     <div style="display:none" id="svg-sprite-container"></div>
     <script>
@@ -46,7 +46,7 @@
         })();
     </script>
     <!-- 骨架屏 HTML -->
-    <div id="skeleton-screen" class="fixed inset-0 bg-gray-50 z-50">
+    <div id="skeleton-screen" style="position: fixed; inset: 0; background-color: rgb(var(--bg-primary)); z-index: 50;">
         <div class="container mx-auto px-4 py-6">
             <!-- 头部骨架 -->
             <div class="flex justify-between items-center mb-6">
@@ -137,9 +137,9 @@
                 <span class="flex items-center">
                     <svg class="icon text-primary mr-2"><use href="#icon-info-circle"/></svg>系统说明
                 </span>
-                <i id="instructionsIcon" class="fa fa-chevron-up text-gray-500 transition-transform duration-300"></i>
+                <i id="instructionsIcon" class="fa fa-chevron-up text-gray-500" style="transition: transform 0.3s ease;"></i>
             </h2>
-            <div id="instructionsContent" class="overflow-hidden transition-all duration-300">
+            <div id="instructionsContent" class="overflow-hidden transition-all duration-300" style="max-height: 1000px; opacity: 1; margin-top: 0;">
                 <div class="bg-blue-50 p-4 rounded-lg">
                 <p class="text-sm text-gray-700 mb-2">✅ 数据存储在MySQL数据库，后端实时统计</p>
                 <p class="text-sm text-gray-700 mb-2">⚡ WebSocket实时推送，数据变更自动通知</p>
